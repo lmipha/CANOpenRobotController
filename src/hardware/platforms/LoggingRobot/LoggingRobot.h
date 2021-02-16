@@ -22,7 +22,9 @@ class LoggingRobot : public Robot {
    private:
     std::vector<RobotousRFT *> crutchSensors;
     Eigen::VectorXd crutchReadings;  //6xN Vector containing all crutch readings
-    HX711* strainGauge; 
+
+    HX711* strainGauge;
+    Eigen::VectorXd strainForces;  //6xN Vector containing all crutch readings
 
     bool sensorsOn =  false;
 
@@ -44,16 +46,18 @@ class LoggingRobot : public Robot {
      */
     Eigen::VectorXd &getCrutchReadings();
 
-    /**
+    Eigen::VectorXd &getStrainReadings();
+    Eigen::VectorXi getRawStrainReadings() {
+        /**
      * @brief Takes the forces from the crutches and updates a local copy
      * 
      */
-    void updateCrutchReadings();
+        void updateCrutchReadings();
 
     void setCrutchOffsets(Eigen::VectorXd offsets);
 
     bool startSensors();
     bool stopSensors();
-};
+    };
 
 #endif /*LoggingRobot.h*/
