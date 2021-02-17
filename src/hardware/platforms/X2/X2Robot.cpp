@@ -37,12 +37,11 @@ ExoJointLimits X2JointLimits = {deg2rad(120), deg2rad(-30), deg2rad(120), deg2ra
 
 static volatile sig_atomic_t exitHoming = 0;
 
-X2Robot::X2Robot() : Robot() {
-    spdlog::debug("X2Robot Created");
+X2Robot::X2Robot(std::string robotName):
+        robotName_(robotName){
 
-    // This is the default name accessed from the MACRO. If ROS is used, under demo machine robot name can be set
-    // by setRobotName() to the ros node name. See X2DemoMachine::init()
-    robotName_ = XSTR(X2_NAME);
+
+    spdlog::debug("{} Created", robotName_);
 
 #ifdef NOROBOT
     simJointPositions_ = Eigen::VectorXd::Zero(X2_NUM_JOINTS);
@@ -60,6 +59,8 @@ X2Robot::X2Robot() : Robot() {
     x2Parameters.c2 = Eigen::VectorXd::Zero(X2_NUM_JOINTS);
     x2Parameters.cuffWeights = Eigen::VectorXd::Zero(X2_NUM_FORCE_SENSORS);
     x2Parameters.forceSensorScaleFactor = Eigen::VectorXd::Zero(X2_NUM_FORCE_SENSORS);
+
+    initializeRobotParams(robotName_);
 
     spdlog::debug("initialiseJoints call");
 
@@ -448,9 +449,8 @@ bool X2Robot::initialiseJoints() {
         } else if (id == X2_LEFT_KNEE || id == X2_RIGHT_KNEE) {
             joints.push_back(new X2Joint(id, X2JointLimits.kneeMin, X2JointLimits.kneeMax, kneeJDP, motorDrives[id]));
         }
+        spdlog::debug("X2Robot::initialiseJoints() loop");
     }
-
-    initializeRobotParams(robotName_);
 
     return true;
 }
