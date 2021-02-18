@@ -151,8 +151,7 @@ bool AlexMachine::EndTraj::check()
     else
     {
         // testing with keyboard
-        if (OWNER->robot->keyboard->getW() == true)
-        {
+        if (OWNER->robot->keyboard->getW() == true)        {
             return true;
         }
         else
@@ -192,8 +191,8 @@ bool AlexMachine::FeetTogether::check(void)
 
 bool AlexMachine::StandSelect::check(void)
 {
-    if (OWNER->robot->getResetFlag())
-    {
+    //if (OWNER->robot->getResetFlag())
+   // {
         if (OWNER->robot->keyboard->getA())
         {
             spdlog::debug("Stand selected by keyboard! Begin standing up");
@@ -204,13 +203,13 @@ bool AlexMachine::StandSelect::check(void)
             spdlog::debug("Stand selected by crutch! Begin standing up");
             return true;
         }
-    }
+   // }
     return false;
 }
 bool AlexMachine::SitSelect::check(void)
 {
-    if (OWNER->robot->getResetFlag())
-    {
+   // if (OWNER->robot->getResetFlag())
+   // {
         if (OWNER->robot->keyboard->getA())
         {
             spdlog::debug("Sit selected! Begin standing up");
@@ -225,7 +224,7 @@ bool AlexMachine::SitSelect::check(void)
         {
             return false;
         }
-    }
+  //  }
 }
 bool AlexMachine::WalkSelect::check(void)
 {

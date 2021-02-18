@@ -34,10 +34,6 @@ AlexRobot::~AlexRobot() {
     spdlog::debug("AlexRobot deleted");
 }
 
-void AlexRobot::signalHandler(int signum) {
-    exitHoming = 1;
-    std::raise(SIGTERM);  //Clean exit
-}
 
 void AlexRobot::resetErrors() {
     spdlog::debug("Clearing errors on all motor drives ");
@@ -175,7 +171,12 @@ setMovementReturnCode_t AlexRobot::setPosition(Eigen::VectorXd positions) {
     int i = 0;
     setMovementReturnCode_t returnValue = SUCCESS;
     for (auto p : joints) {
+        #ifdef NOROBOT
+        spdlog::debug("Joint {}, Target {}, Current {}", i, positions[i], simJointPositions_(i));
+        #else
         spdlog::debug("Joint {}, Target {}, Current {}", i, positions[i], ((AlexJoint *)p)->getPosition());
+        #endif
+
         setMovementReturnCode_t setPosCode = ((AlexJoint *)p)->setPosition(positions[i]);
         if (setPosCode == INCORRECT_MODE) {
             spdlog::error("Joint {} is not in Position Control ", p->getId());
@@ -268,6 +269,7 @@ Eigen::VectorXd &AlexRobot::getPosition() {
 #ifndef NOROBOT
     return Robot::getPosition();
 #else
+    spdlog::info("test");
     return simJointPositions_;
 #endif
 }
@@ -450,25 +452,14 @@ bool AlexRobot::moveThroughTraj() {
         currTrajProgress += elapsedSec;
         double fracTrajProgress = currTrajProgress / trajTimeUS;
         std::vector<double> setPoints = trajectoryGenerator->getSetPoint(fracTrajProgress);
-        int i = 0;
-        //std::cout << currTrajProgress << " , ";
-        for (auto p : joints) {
-            //std::cout << rad2deg(setPoints[i]) << ",";
-            setMovementReturnCode_t setPosCode = ((Joint *)p)->setPosition(rad2deg(setPoints[i]));
-            if (setPosCode == INCORRECT_MODE) {
-                std::cout << "Joint ID: " << p->getId() << ": is not in Position Control " << std::endl;
-                returnValue = false;
-            } else if (setPosCode != SUCCESS) {
-                // Something bad happened
-                std::cout << "Joint " << p->getId() << ": Unknown Error " << std::endl;
-                returnValue = false;
-            }
-            i++;
-        }
-        //std::cout << std::endl;
-    } else {
-        //spdlog::debug("PRESS Go to go!")
-    }
+
+        //std::vector<float> test_vector = {2, 1, 3};
+        //Eigen::MatrixXf test = Eigen::Map<Eigen::Matrix<float, 3, 1> >(test_vector.data());
+
+        Eigen::VectorXd eigSetPoints = Eigen::Map<Eigen::Matrix<double, ALEX_NUM_JOINTS, 1>>(setPoints.data());
+
+        returnValue = (setPosition(eigSetPoints) == SUCCESS);
+    } 
 
     return returnValue;
 }
@@ -489,8 +480,6 @@ bool AlexRobot::initialiseJoints() {
         }
         
     }
-    //initializeRobotParams(robotName_);
-
     return true;
 }
 
@@ -511,14 +500,20 @@ bool AlexRobot::initialiseNetwork() {
 void AlexRobot::updateRobot() {
     Robot::updateRobot();
 }
+
 double AlexRobot::getCurrTrajProgress() {
     return currTrajProgress;
 }
+
 std::vector<double> AlexRobot::getJointStates() {
     std::vector<double> robotJointspace;
     int i = 0;
     for (auto joint : joints) {
-        robotJointspace.push_back(joint->getPosition());
+        #ifdef NOROBOT
+            robotJointspace.push_back(simJointPositions_(i));
+        #else
+            robotJointspace.push_back(joint->getPosition());
+        #endif
         i++;
     }
     return robotJointspace;
@@ -529,27 +524,32 @@ void AlexRobot::setCurrentMotion(RobotMode mode) {
 }
 
 RobotMode AlexRobot::getCurrentMotion() {
-    return static_cast<RobotMode>(currentMovement);}
+    return static_cast<RobotMode>(currentMovement);
+}
+
 void AlexRobot::setNextMotion(RobotMode mode) {
     pb->setNextMovement(static_cast<UNSIGNED8>(mode));
 }
+
 RobotMode AlexRobot::getNextMotion() {
     return static_cast<RobotMode>(pb->getNextMovement());
 }
+
 void AlexRobot::setCurrentState(AlexState state) {
     currentState = static_cast<UNSIGNED8>(state);
 }
+
 bool AlexRobot::getGo() {
     return pb->getGo();
 }
 
 void AlexRobot::setResetFlag(bool value) {
-    resetTrajectory = value;
+   // resetTrajectory = value;
+   // Do nothing
 }
 
 bool AlexRobot::getResetFlag() {
     return resetTrajectory;
-    ;
 }
 
 bool AlexRobot::disableJoints() {
@@ -562,6 +562,20 @@ bool AlexRobot::disableJoints() {
     }
 
     return tmp;
+}
+
+bool AlexRobot::configureMasterPDOs() {
+    spdlog::info("AlexRobot::ConfigureMasterPDOs");
+
+    void *currStateVar[1] = {(void *) &currentState};
+    UNSIGNED16 currStateSize[1] = {1};
+    currStateTPDO = new TPDO(0x211, 0xFF, currStateVar, currStateSize, 1);
+
+    void *currMovVar[1] = {(void *) &currentMovement};
+    UNSIGNED16 currMovSize[1] = {1};
+    currMovTPDO = new TPDO(0x212, 0xFF, currMovVar, currMovSize, 1);
+
+    return Robot::configureMasterPDOs();
 }
 
 #ifdef VIRTUAL

@@ -35,8 +35,7 @@ class ALEXCrutchController : public InputDevice {
     RPDO *nextMovementRPDO;
 
     UNSIGNED8 nextMovement = 0;
-    UNSIGNED8 goButton = 0;
-    // UNSIGNED8 HB; // Heartbeat - to implement
+    UNSIGNED8 goButton = 0;    // UNSIGNED8 HB; // Heartbeat - to implement
 
 
    public:

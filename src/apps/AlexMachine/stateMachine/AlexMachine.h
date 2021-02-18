@@ -80,7 +80,7 @@ public:
     AlexMachine();
     void init();
 
-
+    void activate();
     void hwStateUpdate();
     void configureMasterPDOs();
 

@@ -21,7 +21,6 @@ bool ALEXCrutchController::getGo() {
 }
 
 void ALEXCrutchController::updateInput(){
-
 }
 bool ALEXCrutchController::configureMasterPDOs(){
         UNSIGNED16 dataSize[1] = {1};

@@ -16,15 +16,12 @@ void InitState::entry(void)
     //Initialize OD entries - Must be something other then Initial -> must be sent by crutch @ startup
     robot->setCurrentState(AlexState::Init);
     robot->setCurrentMotion(RobotMode::NORMALWALK);
-    spdlog::info("test1");
     robot->setNextMotion(RobotMode::NORMALWALK);
-        spdlog::info("test2");
-
     //robot->pb.printMenu();
     // entry flag must be set to true by a green button release
     robot->setResetFlag(false);
-
 }
+
 void InitState::during(void)
 {
     //Virtual crutch - changing OD.nm

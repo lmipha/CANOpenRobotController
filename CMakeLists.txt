@@ -22,7 +22,9 @@ project(CORC C CXX)
 set (STATE_MACHINE_NAME "AlexMachine")
 
 # Comment to use actual hardware, uncomment for a nor robot (virtual) app
-set(NO_ROBOT OFF)
+set(NO_ROBOT ON)
+set(NO_CRUTCH ON)
+
 
 # ROS Flag. set ON if you want to use ROS. Else, set OFF.
 set(USE_ROS OFF)
@@ -41,6 +43,7 @@ if(NO_ROBOT AND USE_ROS)
 	set(SIM ON)
     add_definitions(-DSIM)
 endif()
+
 
 add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_${CORC_LOGGING_LEVEL})
 

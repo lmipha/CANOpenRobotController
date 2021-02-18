@@ -19,7 +19,7 @@ void DebugState::entry(void) {
     robot->setCurrentState(AlexState::Debug);
 
     // entry flag must be set to true by a green button release
-    robot->setResetFlag(false);
+   // robot->setResetFlag(false);
 }
 
 void DebugState::during(void) {

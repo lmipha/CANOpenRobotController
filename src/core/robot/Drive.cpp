@@ -314,7 +314,7 @@ void Drive::generateEquivalentMasterRPDO(std::vector<OD_Entry_t> items, int COB_
     // Add to the local (CORC-side) Object Dictionary
     rpdos.push_back(new RPDO(COB_ID, RPDOSyncRate, variables, variableSize, items.size()));
 
-    spdlog::debug("Master RPDO (COB-ID 0x{0:x}) Setup for Node {}", COB_ID, NodeID);
+    //spdlog::debug("Master RPDO (COB-ID 0x{0:x}) Setup for Node {}", COB_ID, NodeID);
 }
 
 std::vector<std::string> Drive::generateRPDOConfigSDO(std::vector<OD_Entry_t> items, int PDO_Num, int COB_ID, int UpdateTiming, int sub_idx) {
@@ -374,7 +374,7 @@ void Drive::generateEquivalentMasterTPDO(std::vector<OD_Entry_t> items, int COB_
     }
     // Add to the local (CORC-side) Object Dictionary
     tpdos.push_back(new TPDO(COB_ID, TPDOSyncRate, variables, variableSize, items.size()));
-    spdlog::debug("Master TPDO (COB-ID 0x{0:x}) Setup for Node {}", COB_ID, NodeID);
+    //spdlog::debug("Master TPDO (COB-ID 0x{0:x}) Setup for Node {}", COB_ID, NodeID);
 }
 
 std::vector<std::string> Drive::generatePosControlConfigSDO(motorProfile positionProfile) {
