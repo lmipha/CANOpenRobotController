@@ -44,4 +44,14 @@ void InitState::exit(void)
         .torso_length = 0.4,
         .buttocks_height = 0.05};
     trajectoryGenerator->setPilotParameters(Brad_parameters);
+
+    #ifdef NOROBOT
+
+    Eigen::VectorXd positions(4);
+    positions(0)= deg2rad(90);
+    positions(1) =deg2rad(100);
+    positions(2)= deg2rad(90);
+    positions(3) =deg2rad(100);
+    robot->setPosition(positions);
+#endif
 }

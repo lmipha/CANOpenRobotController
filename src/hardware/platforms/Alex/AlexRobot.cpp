@@ -452,12 +452,9 @@ bool AlexRobot::moveThroughTraj() {
         currTrajProgress += elapsedSec;
         double fracTrajProgress = currTrajProgress / trajTimeUS;
         std::vector<double> setPoints = trajectoryGenerator->getSetPoint(fracTrajProgress);
-
-        //std::vector<float> test_vector = {2, 1, 3};
-        //Eigen::MatrixXf test = Eigen::Map<Eigen::Matrix<float, 3, 1> >(test_vector.data());
-
         Eigen::VectorXd eigSetPoints = Eigen::Map<Eigen::Matrix<double, ALEX_NUM_JOINTS, 1>>(setPoints.data());
 
+       // spdlog::info("{}, {:03.2f}, {:03.2f}", fracTrajProgress, rad2deg(setPoints[0]), rad2deg(setPoints[1]));
         returnValue = (setPosition(eigSetPoints) == SUCCESS);
     } 
 
@@ -516,6 +513,9 @@ std::vector<double> AlexRobot::getJointStates() {
         #endif
         i++;
     }
+
+    spdlog::info("Current State: {:03.2f}, {:03.2f}, {:03.2f}, {:03.2f}", rad2deg(simJointPositions_(0)), rad2deg(simJointPositions_(1)), rad2deg(simJointPositions_(2)), rad2deg(simJointPositions_(3)));
+
     return robotJointspace;
 }
 

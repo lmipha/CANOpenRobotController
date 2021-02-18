@@ -70,30 +70,12 @@ struct RobotParameters {
     Eigen::VectorXd forceSensorScaleFactor;  // scale factor of force sensors [N/sensor output]
 };
 
-/**
- * Paramater definitions: Hip motor reading and corresponding angle. Used for mapping between degree and motor values.
- */
-static JointDrivePairs hipJDP{
-    250880,       // drivePosA
-    0,            // drivePosB
-    deg2rad(90),  //jointPosA
-    deg2rad(0)    //jointPosB
-};
-/**
- * Paramater definitions: Knee motor reading and corresponding angle. Used for mapping between degree and motor values.
- */
-static JointDrivePairs kneeJDP{
-    250880,       // drivePosA
-    0,            //drivePosB
-    deg2rad(90),  //jointPosA
-    deg2rad(0)    //jointPosB
-};
 
 /**
  * Defines the Joint Limits of the X2 Exoskeleton
  *
  */
-static ExoJointLimits AlexJointLimits = {deg2rad(120), deg2rad(-30), deg2rad(120), deg2rad(0)};
+static ExoJointLimits AlexJointLimits = {deg2rad(210), deg2rad(70), deg2rad(120), deg2rad(0)};
 
 /**
  * \todo Load in paramaters and dictionary entries from JSON file.
@@ -151,12 +133,6 @@ private:
   Keyboard *keyboard;
   ALEXCrutchController *pb;
   Buttons buttons;
-
-  /**
- * Defines the Joint Limits of the X2 Exoskeleton
- *
- */
-  ExoJointLimits AlexJointLimits = {deg2rad(120), deg2rad(-30), deg2rad(120), deg2rad(0)};
 
   // Base class drive pointer: can be any type of derived driver class.
   std::vector<Drive *> motorDrives;

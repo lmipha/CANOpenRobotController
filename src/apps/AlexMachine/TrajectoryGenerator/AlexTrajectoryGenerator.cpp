@@ -31,10 +31,10 @@ bool AlexTrajectoryGenerator::initialiseTrajectory() {
 bool AlexTrajectoryGenerator::initialiseTrajectory(RobotMode mvmnt, std::vector<double> qdeg) {
     // Set the trajectory parameters
     jointspace_state jointSpaceState;
-    jointSpaceState.q[0] = deg2rad(qdeg[0]);
-    jointSpaceState.q[1] = deg2rad(qdeg[1]);
-    jointSpaceState.q[2] = deg2rad(qdeg[2]);
-    jointSpaceState.q[3] = deg2rad(qdeg[3]);
+    jointSpaceState.q[0] = (qdeg[0]);
+    jointSpaceState.q[1] = (qdeg[1]);
+    jointSpaceState.q[2] = (qdeg[2]);
+    jointSpaceState.q[3] = (qdeg[3]);
     jointSpaceState.q[4] = deg2rad(85);
     jointSpaceState.q[5] = deg2rad(85);
     jointSpaceState.time = 0;
@@ -45,10 +45,10 @@ bool AlexTrajectoryGenerator::initialiseTrajectory(RobotMode mvmnt, std::vector<
 bool AlexTrajectoryGenerator::initialiseTrajectory(RobotMode mvmnt, Foot stanceFoot, std::vector<double> qdeg) {
     // Set the trajectory parameters
     jointspace_state jointSpaceState;
-    jointSpaceState.q[0] = deg2rad(qdeg[0]);
-    jointSpaceState.q[1] = deg2rad(qdeg[1]);
-    jointSpaceState.q[2] = deg2rad(qdeg[2]);
-    jointSpaceState.q[3] = deg2rad(qdeg[3]);
+    jointSpaceState.q[0] = (qdeg[0]);
+    jointSpaceState.q[1] = (qdeg[1]);
+    jointSpaceState.q[2] = (qdeg[2]);
+    jointSpaceState.q[3] = (qdeg[3]);
     jointSpaceState.q[4] = deg2rad(85);
     jointSpaceState.q[5] = deg2rad(85);
     jointSpaceState.time = 0;
@@ -84,12 +84,13 @@ std::vector<double> AlexTrajectoryGenerator::getSetPoint(time_tt time) {
     int numPoints = trajectoryJointSpline.times.size();
     int numPolynomials = numPoints - 1;
     CubicPolynomial currentPolynomial[ALEX_NUM_JOINTS];
+
     for (int polynomial_index = 0; polynomial_index < numPolynomials; polynomial_index++) {
-        //cout << "[discretise_spline]: pt " << polynomial_index << ":" << endl;
         //if the jointspaceState time is bounded by the section of spline
+
         if (time >= trajectoryJointSpline.times.at(polynomial_index) &&
             time <= trajectoryJointSpline.times.at(polynomial_index + 1)) {
-            //cout << "time " << time << "\t" << trajectoryJointSpline.times.at(polynomial_index)  << endl;
+            //std::cout << "time " << time << "\t" << trajectoryJointSpline.times.at(polynomial_index)  << std::endl;
             for (int i = 0; i < ALEX_NUM_JOINTS; i++) {
                 currentPolynomial[i] = trajectoryJointSpline.polynomials[i].at(polynomial_index);
                 angles.push_back(evaluate_cubic_polynomial(currentPolynomial[i], time));
@@ -104,7 +105,6 @@ std::vector<double> AlexTrajectoryGenerator::getSetPoint(time_tt time) {
             return angles;
         }
     }
-    //spdlog::debug("Time point outside range")
     //if the time point is outside range
     for (int i = 0; i < ALEX_NUM_JOINTS; i++) {
         currentPolynomial[i] = trajectoryJointSpline.polynomials[i].at(numPolynomials - 1);
@@ -1524,10 +1524,10 @@ jointspace_spline AlexTrajectoryGenerator::compute_trajectory_spline(const Traje
     // Convert key states to jointspace (prepend known initial jointspace state)
     jointspaceStates = taskspace_states_to_jointspace_states(initialJointspaceState, taskspaceStates, trajectoryParameters, pilotParameters);
     //Print out all joint space states
-    // spdlog::debug("---- Joint space via points 'states'-----")
-    // for (auto states : jointspaceStates) {
-    //     spdlog::debug("TIME: " << states.time)
-    //     for (auto q : states.q) {
+    //  spdlog::debug("---- Joint space via points 'states'-----");
+    //  for (auto states : jointspaceStates) {
+    //      spdlog::debug("TIME: {}", states.time);
+    //      for (auto q : states.q) {
     //         std::cout << rad2deg(q) << ", ";
     //     }
     //     std::cout << std::endl;
@@ -1553,7 +1553,7 @@ jointspace_spline AlexTrajectoryGenerator::compute_trajectory_spline(const Traje
         if (time >= trajectoryJointSpline.times.at(polynomial_index) &&
             time <= trajectoryJointSpline.times.at(polynomial_index + 1)) {
             //cout << "time " << time << "\t" << trajectoryJointSpline.times.at(polynomial_index)  << std::endl;
-            for (int i = 0; i < NUM_JOINTS; i++) {
+            for (int i = 0; i < ALEX_NUM_JOINTS; i++) {
                 currentPolynomial[i] = trajectoryJointSpline.polynomials[i].at(polynomial_index);
                 temp.qd[i] = evaluate_cubic_polynomial_first_derivative(currentPolynomial[i], time);
                 velocityArray[i] = temp.qd[i];
@@ -1563,7 +1563,7 @@ jointspace_spline AlexTrajectoryGenerator::compute_trajectory_spline(const Traje
     }
     //cout << "[discretise_spline]:\t" << temp.time << "\t";
     //if the time point is outside range
-    for (int i = 0; i < NUM_JOINTS; i++) {
+    for (int i = 0; i < ALEX_NUM_JOINTS; i++) {
         currentPolynomial[i] = trajectoryJointSpline.polynomials[i].at(numPolynomials - 1);
         temp.qd[i] = evaluate_cubic_polynomial_first_derivative(currentPolynomial[i], endTime);
         velocityArray[i] = temp.qd[i];

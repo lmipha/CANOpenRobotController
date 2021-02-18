@@ -164,7 +164,7 @@ void Crutch::run() {
 
             // Check if the Go Button has been pressed
             if (goBut) {
-                std::cout << "Go Pressed" << std::endl;
+                //std::cout << "Go Pressed" << std::endl;
                 if (nextMove == static_cast<RobotMode>(CO_OD_RAM.currentMovement)) {
                     // If the movement set on the ExoBeagle is the same as the one on the screen,
                     // Send the go button status on the OD to true

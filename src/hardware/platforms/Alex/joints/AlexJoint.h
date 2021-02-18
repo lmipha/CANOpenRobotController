@@ -49,7 +49,6 @@ static JointDrivePairs ALEXkneeJDP{
     deg2rad(0)    //jointPosB
 };
 
-
 /**
  * \brief implementation of the ActuatedJoints class for the Alex Exoskeleton. 
  * 
@@ -104,9 +103,6 @@ class AlexJoint : public Joint {
 
    public:
     AlexJoint(int jointID, double jointMin, double jointMax, JointDrivePairs jdp, Drive *drive);
-
-
-
 
     bool updateValue();
     bool initNetwork();

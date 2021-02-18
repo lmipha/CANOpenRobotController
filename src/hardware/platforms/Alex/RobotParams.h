@@ -17,7 +17,7 @@
 #define deg2rad(deg) ((deg)*M_PI / 180.0)
 #define rad2deg(rad) ((rad)*180.0 / M_PI)
 
-#define ALEX_NUM_JOINTS 4
+#define ALEX_NUM_JOINTS 6
 
 /**
  * An enum type.

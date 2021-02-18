@@ -148,17 +148,7 @@ bool AlexMachine::EndTraj::check()
     {
         return true;
     }
-    else
-    {
-        // testing with keyboard
-        if (OWNER->robot->keyboard->getW() == true)        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
+    return false;
 }
 
 bool AlexMachine::StartExo::check(void)
