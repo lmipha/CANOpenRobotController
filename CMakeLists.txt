@@ -17,6 +17,8 @@ project(CORC C CXX)
 #set (STATE_MACHINE_NAME "ExoTestMachine")
 #set (STATE_MACHINE_NAME "X2DemoMachine")
 set (STATE_MACHINE_NAME "LoggingDevice")
+#set (STATE_MACHINE_NAME "ForcePlateApp")
+
 
 # Comment to use actual hardware, uncomment for a nor robot (virtual) app
 set(NO_ROBOT OFF)
@@ -28,8 +30,6 @@ set(USE_ROS OFF)
 # INFO is the recommended level in normal operation
 set(CORC_LOGGING_LEVEL DEBUG) 
 ################################################################################
-
-#
 
 
 if(USE_ROS)
