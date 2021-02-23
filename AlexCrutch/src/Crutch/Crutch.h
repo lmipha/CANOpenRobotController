@@ -16,8 +16,8 @@
 #define CLK_FREQ 2000        // Operating frequency of the crutch 'run' function
 #define LONG_PRESS_LENGTH 2  // Number of seconds to hold button to execute long press logic
 
-#define _NOLCD
-#define _KEYBOARD
+//#define _NOLCD
+//#define _KEYBOARD
 // #define _NOROBOT
 
 #include <array>

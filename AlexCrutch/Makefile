@@ -12,7 +12,7 @@ SOCKETCAN_DIR = src/CANopenNode/stack/socketCAN
 OD_DIR = src/objDict
 TARGET_FOLDER = bin/
 CRUTCH_DIR = src/Crutch
-LINK_TARGET  =  $ Pocket_Beagle
+LINK_TARGET  =  $ ALEXCrutchController
 
 INCLUDE_DIRS = 	-I$(SRC_DIR) \
 				-I$(CAN_DIR)    \
