@@ -23,6 +23,9 @@ AlexJoint::AlexJoint(int jointID, double jointMin, double jointMax, JointDrivePa
 bool AlexJoint::updateValue() {
     #ifndef VIRTUAL
     position = driveUnitToJointPosition(drive->getPos());
+    velocity = driveUnitToJointVelocity(drive->getVel());
+    torque = driveUnitToJointTorque(drive->getTorque());
+    
     // FOR TESTING w/o real robot -> set current pos to last setPosition
 #endif
 #ifdef VIRTUAL

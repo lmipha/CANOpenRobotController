@@ -70,6 +70,7 @@ void app_programEnd(void) {
     stateMachine->end();
     delete stateMachine;
     spdlog::info("CORC End application");
+
 #ifdef TIMING_LOG
     loopTimer.end();
 #endif

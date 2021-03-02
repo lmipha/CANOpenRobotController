@@ -10,6 +10,7 @@ AlexMachine::AlexMachine()
     // Events
     endTraj = new EndTraj(this);
     startExo = new StartExo(this);
+    startExoHome = new StartExoHome(this);
     feetTogether = new FeetTogether(this);
     standSelect = new StandSelect(this);
     sitSelect = new SitSelect(this);
@@ -65,6 +66,7 @@ AlexMachine::AlexMachine()
      * \brief Stationary to moving state transitions (OD.NM controls type of walk)
      *
      */
+    NewTransition(initState, startExoHome, initState);
     NewTransition(initState, startExo, initialSitting);
     NewTransition(sitting, standSelect, standingUp);
     NewTransition(standing, sitSelect, sittingDwn);
@@ -153,6 +155,7 @@ bool AlexMachine::EndTraj::check()
 
 bool AlexMachine::StartExo::check(void)
 {
+    spdlog::info("{}, {}",OWNER->robot->getCurrentMotion(),OWNER->robot->getGo());
     if (OWNER->robot->keyboard->getD() == true)
     {
         spdlog::info("LEAVING INIT and entering init Sitting");
@@ -165,6 +168,24 @@ bool AlexMachine::StartExo::check(void)
     }
     return false;
 }
+
+bool AlexMachine::StartExoHome::check(void) {
+    if (OWNER->robot->keyboard->getA() == true) {
+        spdlog::info("LEAVING INIT and entering Sitting");
+        spdlog::info("Performing joint homing");
+
+
+        OWNER->robot->homing();
+
+        spdlog::info("Homing complete");
+
+        spdlog::info("Setting to Position Control");
+        OWNER->robot->initPositionControl();
+        return true;
+    }
+    return false;
+}
+
 bool AlexMachine::FeetTogether::check(void)
 {
     if (OWNER->robot->keyboard->getA())
@@ -327,6 +348,6 @@ void AlexMachine::configureMasterPDOs() {
 }
 
 void AlexMachine::end() {
-    spdlog::debug("Ending AlexMachine");
+    spdlog::info("Ending AlexMachine");
     delete robot;
 }

@@ -133,6 +133,7 @@ private:
     EventObject(IsAPressed) * isAPressed;
     EventObject(StartButtonsPressed) * startButtonsPressed;
     EventObject(StartExo) * startExo;
+    EventObject(StartExoHome) * startExoHome;
     EventObject(StartSit) * startSit;
     EventObject(StartStand) * startStand;
     EventObject(StartWalk) * startWalk;
@@ -145,6 +146,7 @@ private:
     EventObject(BackStep) * backStep;
     EventObject(UpStairSelect) * upStairSelect;
     EventObject(DownStairSelect) * downStairSelect;
+
 
 #ifdef VIRTUAL
     EventObject(DebugTransition) * debugTransition;

@@ -5,7 +5,7 @@ void InitState::entry(void)
     spdlog::info("ALEX Software Begins");
 #ifdef KEYBOARD
     std::cout << "========================" << endl
-              << " PRESS D to start program" << endl
+              << " PRESS D to start program or A to Home" << endl
               << "========================" << endl;
 #endif
 #ifdef VIRTUAL

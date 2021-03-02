@@ -290,7 +290,8 @@ Eigen::VectorXd &AlexRobot::getTorque() {
 #endif
 }
 
-
+// Homing Functionality. Drives the Joints in a given direction at a low speed until it stops moving (i.e. hits a stop)
+// This position is then set as the joint limit. ;u
 bool AlexRobot::homing(std::vector<int> homingDirection, float thresholdTorque, float delayTime,
                      float homingSpeed, float maxTime) {
     std::vector<bool> success(ALEX_NUM_JOINTS, false);
@@ -298,17 +299,17 @@ bool AlexRobot::homing(std::vector<int> homingDirection, float thresholdTorque, 
     this->initVelocityControl();
     signal(SIGINT, signalHandler); // check if ctrl + c is pressed
 
-    for (int i = 0; i < ALEX_NUM_JOINTS; i++) {
+    for (int i = 0; i < ALEX_NUM_JOINTS-2; i++) {
         if (homingDirection[i] == 0) continue;  // skip the joint if it is not asked to do homing
 
-        Eigen::VectorXd desiredVelocity(ALEX_NUM_JOINTS);
+        Eigen::VectorXd desiredVelocity(ALEX_NUM_JOINTS-2);
         std::chrono::steady_clock::time_point firstTimeHighTorque;  // time at the first time joint exceed thresholdTorque
         bool highTorqueReached = false;
 
         desiredVelocity[i] = homingSpeed * homingDirection[i] / std::abs(homingDirection[i]);  // setting the desired velocity by using the direction
         time0 = std::chrono::steady_clock::now();
 
-        spdlog::debug("Homing Joint {} ...", i);
+        spdlog::info("Homing Joint {} ...", i);
 
         while (success[i] == false &&
                 exitHoming == 0 &&
@@ -316,7 +317,6 @@ bool AlexRobot::homing(std::vector<int> homingDirection, float thresholdTorque, 
             this->updateRobot();  // because this function has its own loops, updateRobot needs to be called
             this->setVelocity(desiredVelocity);
             usleep(10000);
-
 
             if (std::abs(this->getTorque()[i]) >= thresholdTorque) {  // if high torque is reached
                 highTorqueReached = true;
@@ -328,7 +328,7 @@ bool AlexRobot::homing(std::vector<int> homingDirection, float thresholdTorque, 
                     usleep(10000);
 
                     if (std::abs(this->getTorque()[i]) < thresholdTorque) {  // if torque value reach below thresholdTorque, goes back
-                        spdlog::debug("Torque drop", this->getTorque()[i]);
+                        spdlog::info("Torque drop", this->getTorque()[i]);
                         highTorqueReached = false;
                         break;
                     }
@@ -338,7 +338,7 @@ bool AlexRobot::homing(std::vector<int> homingDirection, float thresholdTorque, 
         }
 
         if (success[i]) {
-            spdlog::debug("Homing Succeeded for Joint {} .", i);
+            spdlog::info("Homing Succeeded for Joint {} .", i);
             usleep(10000);
             if (i == ALEX_LEFT_HIP || i == ALEX_RIGHT_HIP) {  // if it is a hip joint
 
@@ -348,7 +348,6 @@ bool AlexRobot::homing(std::vector<int> homingDirection, float thresholdTorque, 
                 else
                     ((AlexJoint *)this->joints[i])->setPositionOffset(AlexJointLimits.hipMin);
             } else if (i == ALEX_LEFT_KNEE || i == ALEX_RIGHT_KNEE) {  // if it is a knee joint
-
                 // zeroing is done depending on the limits on the homing direction
                 if (homingDirection[i] > 0)
                     ((AlexJoint *)this->joints[i])->setPositionOffset(AlexJointLimits.kneeMax);
@@ -419,7 +418,7 @@ bool AlexRobot::initializeRobotParams(std::string robotName) {
 }
 
 void AlexRobot::freeMemory() {
-    for (auto p : joints) {
+    /*for (auto p : joints) {
         spdlog::debug("Delete Joint ID: {}", p->getId());
         delete p;
     }
@@ -430,7 +429,7 @@ void AlexRobot::freeMemory() {
     for (auto p : inputs) {
         spdlog::debug("Deleting Input");
         delete p;
-    }
+    }*/
 }
 
 void AlexRobot::startNewTraj() {
@@ -496,6 +495,7 @@ bool AlexRobot::initialiseNetwork() {
 
 void AlexRobot::updateRobot() {
     Robot::updateRobot();
+    currentMovement = pb->getNextMovement();
 }
 
 double AlexRobot::getCurrTrajProgress() {
@@ -513,9 +513,9 @@ std::vector<double> AlexRobot::getJointStates() {
         #endif
         i++;
     }
-
-    spdlog::info("Current State: {:03.2f}, {:03.2f}, {:03.2f}, {:03.2f}", rad2deg(simJointPositions_(0)), rad2deg(simJointPositions_(1)), rad2deg(simJointPositions_(2)), rad2deg(simJointPositions_(3)));
-
+    #ifdef NOROBOT
+        spdlog::info("Current State: {:03.2f}, {:03.2f}, {:03.2f}, {:03.2f}", rad2deg(simJointPositions_(0)), rad2deg(simJointPositions_(1)), rad2deg(simJointPositions_(2)), rad2deg(simJointPositions_(3)));
+    #endif 
     return robotJointspace;
 }
 
