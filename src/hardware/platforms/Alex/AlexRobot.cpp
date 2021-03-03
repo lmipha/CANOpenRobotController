@@ -6,7 +6,9 @@ AlexRobot::AlexRobot(AlexTrajectoryGenerator *tj) {
     trajectoryGenerator = tj;
     spdlog::debug("AlexRobot Created");
     
-    
+    // Set to something other than Init... as this is what it will be set to later
+    setCurrentState(AlexState::Debug);
+
     // This is the default name accessed from the MACRO. If ROS is used, under demo machine robot name can be set
     // by setRobotName() to the ros node name. See X2DemoMachine::init()
     robotName_ = XSTR(X2_NAME);
@@ -171,20 +173,22 @@ setMovementReturnCode_t AlexRobot::setPosition(Eigen::VectorXd positions) {
     int i = 0;
     setMovementReturnCode_t returnValue = SUCCESS;
     for (auto p : joints) {
-        #ifdef NOROBOT
-        spdlog::debug("Joint {}, Target {}, Current {}", i, positions[i], simJointPositions_(i));
-        #else
-        spdlog::debug("Joint {}, Target {}, Current {}", i, positions[i], ((AlexJoint *)p)->getPosition());
-        #endif
+        if (i < ALEX_ACTUAL_NUM_JOINTS){
+            #ifdef NOROBOT
+            spdlog::debug("Joint {}, Target {}, Current {}", i, positions[i], simJointPositions_(i));
+            #else
+            spdlog::debug("Joint {}, Target {}, Current {}", i, positions[i], ((AlexJoint *)p)->getPosition());
+            #endif
 
-        setMovementReturnCode_t setPosCode = ((AlexJoint *)p)->setPosition(positions[i]);
-        if (setPosCode == INCORRECT_MODE) {
-            spdlog::error("Joint {} is not in Position Control ", p->getId());
-            returnValue = INCORRECT_MODE;
-        } else if (setPosCode != SUCCESS) {
-            // Something bad happened
-            spdlog::error("Joint {} Unknown Error", p->getId());
-            returnValue = UNKNOWN_ERROR;
+            setMovementReturnCode_t setPosCode = ((AlexJoint *)p)->setPosition(positions[i]);
+            if (setPosCode == INCORRECT_MODE) {
+                spdlog::error("Joint {} is not in Position Control ", p->getId());
+                returnValue = INCORRECT_MODE;
+            } else if (setPosCode != SUCCESS) {
+                // Something bad happened
+                spdlog::error("Joint {} Unknown Error", p->getId());
+                returnValue = UNKNOWN_ERROR;
+            }
         }
         i++;
     }
@@ -209,16 +213,18 @@ setMovementReturnCode_t AlexRobot::setVelocity(Eigen::VectorXd velocities) {
     int i = 0;
     setMovementReturnCode_t returnValue = SUCCESS;
     for (auto p : joints) {
-        setMovementReturnCode_t setPosCode = ((AlexJoint *)p)->setVelocity(velocities[i]);
-        if (setPosCode == INCORRECT_MODE) {
-            spdlog::error("Joint {} is not in Velocity Control", p->getId());
-            returnValue = INCORRECT_MODE;
-        } else if (setPosCode != SUCCESS) {
-            // Something bad happened
-            spdlog::error("Joint {} Unknown Error", p->getId());
-            returnValue = UNKNOWN_ERROR;
+        if (i < ALEX_ACTUAL_NUM_JOINTS){
+            setMovementReturnCode_t setPosCode = ((AlexJoint *)p)->setVelocity(velocities[i]);
+            if (setPosCode == INCORRECT_MODE) {
+                spdlog::error("Joint {} is not in Velocity Control", p->getId());
+                returnValue = INCORRECT_MODE;
+            } else if (setPosCode != SUCCESS) {
+                // Something bad happened
+                spdlog::error("Joint {} Unknown Error", p->getId());
+                returnValue = UNKNOWN_ERROR;
+            }
+            i++;
         }
-        i++;
     }
 
 #ifdef SIM
@@ -239,14 +245,16 @@ setMovementReturnCode_t AlexRobot::setTorque(Eigen::VectorXd torques) {
     int i = 0;
     setMovementReturnCode_t returnValue = SUCCESS;
     for (auto p : joints) {
-        setMovementReturnCode_t setPosCode = ((AlexJoint *)p)->setTorque(torques[i]);
-        if (setPosCode == INCORRECT_MODE) {
-            spdlog::error("Joint {} is not in Torque Control", p->getId());
-            returnValue = INCORRECT_MODE;
-        } else if (setPosCode != SUCCESS) {
-            // Something bad happened
-            spdlog::error("Joint {} Unknown Error", p->getId());
-            returnValue = UNKNOWN_ERROR;
+        if (i < ALEX_ACTUAL_NUM_JOINTS){
+            setMovementReturnCode_t setPosCode = ((AlexJoint *)p)->setTorque(torques[i]);
+            if (setPosCode == INCORRECT_MODE) {
+                spdlog::error("Joint {} is not in Torque Control", p->getId());
+                returnValue = INCORRECT_MODE;
+            } else if (setPosCode != SUCCESS) {
+                // Something bad happened
+                spdlog::error("Joint {} Unknown Error", p->getId());
+                returnValue = UNKNOWN_ERROR;
+            }
         }
         i++;
     }
@@ -299,10 +307,10 @@ bool AlexRobot::homing(std::vector<int> homingDirection, float thresholdTorque, 
     this->initVelocityControl();
     signal(SIGINT, signalHandler); // check if ctrl + c is pressed
 
-    for (int i = 0; i < ALEX_NUM_JOINTS-2; i++) {
+    for (int i = 0; i < ALEX_ACTUAL_NUM_JOINTS; i++) {
         if (homingDirection[i] == 0) continue;  // skip the joint if it is not asked to do homing
 
-        Eigen::VectorXd desiredVelocity(ALEX_NUM_JOINTS-2);
+        Eigen::VectorXd desiredVelocity(ALEX_ACTUAL_NUM_JOINTS);
         std::chrono::steady_clock::time_point firstTimeHighTorque;  // time at the first time joint exceed thresholdTorque
         bool highTorqueReached = false;
 
@@ -418,7 +426,7 @@ bool AlexRobot::initializeRobotParams(std::string robotName) {
 }
 
 void AlexRobot::freeMemory() {
-    /*for (auto p : joints) {
+    for (auto p : joints) {
         spdlog::debug("Delete Joint ID: {}", p->getId());
         delete p;
     }
@@ -429,7 +437,7 @@ void AlexRobot::freeMemory() {
     for (auto p : inputs) {
         spdlog::debug("Deleting Input");
         delete p;
-    }*/
+    }
 }
 
 void AlexRobot::startNewTraj() {
@@ -446,6 +454,8 @@ bool AlexRobot::moveThroughTraj() {
     double elapsedSec = currTime.tv_sec - prevTime.tv_sec + (currTime.tv_nsec - prevTime.tv_nsec) / 1e9;
     double trajTimeUS = trajectoryGenerator->getStepDuration();
     prevTime = currTime;
+    spdlog::info("{}", getGo());
+
     // This should check to make sure that the "GO" button is pressed.
     if (getGo()) {
         currTrajProgress += elapsedSec;

@@ -59,10 +59,35 @@ void Crutch::run() {
     // Poll the buttons
     updateButtons();
 
+    // This should go into updateButtons
+    // Start timer when button is pressed
+    if (nextBut && !prevNextBut) {
+        initNextButCount = counter;
+    }
+    if (lastBut && !prevLastBut) {
+        initLastButCount = counter;
+    }
+
+    //std::cout << std::dec << (counter - initNextButCount) / CLK_FREQ << " " << std::dec << (counter - initLastButCount) / CLK_FREQ << std::endl;
+
+    // Reset next move if both buttons held for more than 5 seconds
+    if (nextBut &&  (counter - initNextButCount) / CLK_FREQ > 5 && lastBut && (counter - initLastButCount) / CLK_FREQ > 5){
+        // Reset next move
+        CO_OD_RAM.nextMovement = 0;
+        lastNextMove = nextMove;
+        nextMove = RobotMode::NORMALWALK;
+        
+
+        CO_OD_RAM.currentState = static_cast<int> (SMState::Error);
+        currState = SMState::Error;
+        std::cout << "RESET" << std::endl;;
+    }
+ 
+
     if (currState == SMState::Init) {
         if (nextBut && lastBut) {
             nextMove = RobotMode::INITIAL;
-            std::cout << "Start Buttons Pressed" << std::endl;
+            //std::cout << "Start Buttons Pressed" << std::endl;
             CO_OD_RAM.nextMovement = static_cast<uint16_t>(nextMove);
 #ifdef _NOROBOT
             //CO_OD_RAM.currentState = static_cast<SMState>(Standing);  // Arbitrary state
@@ -80,7 +105,7 @@ void Crutch::run() {
 
         if (nextMove == RobotMode::INITIAL) {
             if (goBut) {
-                std::cout << "Send GO" << std::endl;
+                //std::cout << "Send GO" << std::endl;
             }
             CO_OD_RAM.goButton = static_cast<uint16_t>(goBut);
         }
@@ -119,15 +144,6 @@ void Crutch::run() {
             prevLongNextBut = longNextBut;
             prevLongLastBut = longLastBut;
 #endif
-
-            // Start timer when button is pressed
-            if (nextBut && !prevNextBut) {
-                initNextButCount = counter;
-            }
-            if (lastBut && !prevLastBut) {
-                initLastButCount = counter;
-            }
-
             // Execute logic when button is released (Note: Do not want to execute logic when in error state)
             if (!nextBut && prevNextBut && (currState != SMState::Error)) {
                 // Upon release, determine how many seconds the button was pressed for
@@ -159,8 +175,6 @@ void Crutch::run() {
                 // Update any stage or movement index changes
                 nextMove = stageMovementList[stage][index];
             }
-            prevNextBut = nextBut;
-            prevLastBut = lastBut;
 
             // Check if the Go Button has been pressed
             if (goBut) {
@@ -184,6 +198,9 @@ void Crutch::run() {
         // If not in a stationary state, just map the GoButton to to the ExoBeagle OD
         CO_OD_RAM.goButton = static_cast<uint16_t>(goBut);
     }
+
+    prevNextBut = nextBut;
+    prevLastBut = lastBut;
 
 #ifndef _NOLCD
     if (!lcd->isQueueEmpty()) {
