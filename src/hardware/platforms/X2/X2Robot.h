@@ -133,7 +133,7 @@ class X2Robot : public Robot {
       * Initialize memory for the Exoskelton <code>Joint</code> + sensors.
       * Load in exoskeleton paramaters to  <code>TrajectoryGenerator.</code>.
       */
-    X2Robot();
+    X2Robot(std::string robotName = XSTR(X2_NAME));
     ~X2Robot();
     Keyboard* keyboard;
     std::vector<Drive*> motorDrives;
@@ -144,6 +144,11 @@ class X2Robot : public Robot {
     //  *
     //  */
     struct timeval tv, tv_diff, moving_tv, tv_changed, stationary_tv, start_traj, last_tv;
+
+    /**
+       * \brief Clears (or attempts to clear) errors on the motor drives.
+       */
+   void resetErrors();
 
     /**
        * \brief Initialises all joints to position control mode.
@@ -247,7 +252,7 @@ class X2Robot : public Robot {
     * \param maxTime maximum time to complete the homing [s]
     * \return bool success of homing
     */
-    bool homing(std::vector<int> homingDirection = std::vector<int>(X2_NUM_JOINTS, 1), float thresholdTorque = 45.0,
+    bool homing(std::vector<int> homingDirection = std::vector<int>(X2_NUM_JOINTS, 1), float thresholdTorque = 50.0,
                 float delayTime = 0.2, float homingSpeed = 5 * M_PI / 180.0, float maxTime = 30.0);
 
     /**
@@ -263,12 +268,12 @@ class X2Robot : public Robot {
        */
     bool initialiseJoints();
 
-    /**
+   /**
        * \brief Implementation of Pure Virtual function from <code>Robot</code> Base class.
        * Initialize each <code>Drive</code> Objects underlying CANOpen Networking.
 
       */
-    bool initialiseNetwork();
+        bool initialiseNetwork();
     /**
        * \brief Implementation of Pure Virtual function from <code>Robot</code> Base class.
        * Initialize each <code>Input</code> Object.
@@ -285,6 +290,14 @@ class X2Robot : public Robot {
        */
     void updateRobot();
 
+
+    /**
+       * \brief Sets the position control profile to be continuous (i.e. movements do not to complete before a new command is issued) or not
+       * 
+       * \return true if successful
+       * \return false if not (joints/drive not enabled or in correct mode)
+       */
+    bool setPosControlContinuousProfile(bool continuous);
     /**
        * \brief returns the feedforward torque to compensate for the gravitational and frictional elements
        *
