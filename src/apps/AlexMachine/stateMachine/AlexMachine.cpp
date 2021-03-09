@@ -75,7 +75,7 @@ AlexMachine::AlexMachine()
     NewTransition(rightForward, walkSelect, steppingLeft);
     NewTransition(leftForward, feetTogether, steppingLastRight);
     NewTransition(rightForward, feetTogether, steppingLastLeft);
-    /*Back Stepping transitions*/
+    /*Back Stepping transitions*/   
     //Currently just a left backstep from standing
     /*\todo add backstep feet together (1/2 step x size) + starting w/back right step*/
     NewTransition(standing, backStep, backStepLeft);
@@ -155,7 +155,6 @@ bool AlexMachine::EndTraj::check()
 
 bool AlexMachine::StartExo::check(void)
 {
-    spdlog::info("{}, {}",OWNER->robot->getCurrentMotion(),OWNER->robot->getGo());
     if (OWNER->robot->keyboard->getD() == true)
     {
         spdlog::info("LEAVING INIT and entering init Sitting");
@@ -174,8 +173,13 @@ bool AlexMachine::StartExoHome::check(void) {
         spdlog::info("LEAVING INIT and entering Sitting");
         spdlog::info("Performing joint homing");
 
+        std::vector<int> homingDirection = {-1, 1, -1, 1, 1, 1}; // std::vector<int>(ALEX_NUM_JOINTS, 1);
+        float thresholdTorque = 50.0;
+        float delayTime = 0.2;
+        float homingSpeed = 5 * M_PI / 180.0;
+        float maxTime = 30.0;
 
-        OWNER->robot->homing();
+        OWNER->robot->homing(homingDirection, thresholdTorque, delayTime, homingSpeed, maxTime);
 
         spdlog::info("Homing complete");
 

@@ -13,10 +13,12 @@
 #include <iostream>
 
 
+
 AlexJoint::AlexJoint(int jointID, double jointMin, double jointMax, JointDrivePairs jdp, Drive *drive) : Joint(jointID, jointMin, jointMax, drive) {
     spdlog::debug("Joint Created, JOINT ID: {}", this->id);
     JDSlope = (jdp.drivePosB - jdp.drivePosA) / (jdp.jointPosB - jdp.jointPosA);
-    JDIntercept = jdp.drivePosA - JDSlope * jdp.jointPosA;
+    JDIntercept =jdp.drivePosA -  JDSlope * jdp.jointPosA ;
+  
     // Do nothing else
 }
 
@@ -36,6 +38,7 @@ bool AlexJoint::updateValue() {
 }
 
 int AlexJoint::jointPositionToDriveUnit(double jointPosition) {
+
     return JDSlope * jointPosition + JDIntercept;
 }
 
@@ -81,5 +84,5 @@ double AlexJoint::getTorque() {
 }
 
 void AlexJoint::setPositionOffset(double offset) {
-    ((CopleyDrive *)drive)->setPositionOffset(jointPositionToDriveUnit(-offset));
+    ((CopleyDrive *)drive)->setPositionOffset(-jointPositionToDriveUnit(offset));
 }

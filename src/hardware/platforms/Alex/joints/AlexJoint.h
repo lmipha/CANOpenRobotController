@@ -37,7 +37,7 @@ static JointDrivePairs ALEXhipJDP{
     250880,       // drivePosA
     0,            // drivePosB
     deg2rad(90),  //jointPosA
-    deg2rad(0)    //jointPosB
+    deg2rad(180)    //jointPosB
 };
 /**
  * Paramater definitions: Knee motor reading and corresponding angle. Used for mapping between degree and motor values.

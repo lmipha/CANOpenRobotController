@@ -100,7 +100,8 @@ private:
      * 
      */
 
-   motorProfile posControlMotorProfile{4000000, 190000, 190000};
+    motorProfile posControlMotorProfile{4000000, 190000, 190000};
+   
    motorProfile velControlMotorProfile{0, 240000, 240000};
 
    std::string robotName_;

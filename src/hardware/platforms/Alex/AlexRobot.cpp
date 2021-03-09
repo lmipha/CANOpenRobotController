@@ -177,7 +177,7 @@ setMovementReturnCode_t AlexRobot::setPosition(Eigen::VectorXd positions) {
             #ifdef NOROBOT
             spdlog::debug("Joint {}, Target {}, Current {}", i, positions[i], simJointPositions_(i));
             #else
-            spdlog::debug("Joint {}, Target {}, Current {}", i, positions[i], ((AlexJoint *)p)->getPosition());
+            spdlog::debug("Joint {}, Target {}, Current {}", i, rad2deg(positions[i]), rad2deg(((AlexJoint *)p)->getPosition()));
             #endif
 
             setMovementReturnCode_t setPosCode = ((AlexJoint *)p)->setPosition(positions[i]);
@@ -299,7 +299,7 @@ Eigen::VectorXd &AlexRobot::getTorque() {
 }
 
 // Homing Functionality. Drives the Joints in a given direction at a low speed until it stops moving (i.e. hits a stop)
-// This position is then set as the joint limit. ;u
+// This position is then set as the joint limit. 
 bool AlexRobot::homing(std::vector<int> homingDirection, float thresholdTorque, float delayTime,
                      float homingSpeed, float maxTime) {
     std::vector<bool> success(ALEX_NUM_JOINTS, false);
@@ -336,7 +336,7 @@ bool AlexRobot::homing(std::vector<int> homingDirection, float thresholdTorque, 
                     usleep(10000);
 
                     if (std::abs(this->getTorque()[i]) < thresholdTorque) {  // if torque value reach below thresholdTorque, goes back
-                        spdlog::info("Torque drop", this->getTorque()[i]);
+                        spdlog::debug("Torque drop", this->getTorque()[i]);
                         highTorqueReached = false;
                         break;
                     }
@@ -454,7 +454,6 @@ bool AlexRobot::moveThroughTraj() {
     double elapsedSec = currTime.tv_sec - prevTime.tv_sec + (currTime.tv_nsec - prevTime.tv_nsec) / 1e9;
     double trajTimeUS = trajectoryGenerator->getStepDuration();
     prevTime = currTime;
-    spdlog::info("{}", getGo());
 
     // This should check to make sure that the "GO" button is pressed.
     if (getGo()) {
@@ -463,7 +462,7 @@ bool AlexRobot::moveThroughTraj() {
         std::vector<double> setPoints = trajectoryGenerator->getSetPoint(fracTrajProgress);
         Eigen::VectorXd eigSetPoints = Eigen::Map<Eigen::Matrix<double, ALEX_NUM_JOINTS, 1>>(setPoints.data());
 
-       // spdlog::info("{}, {:03.2f}, {:03.2f}", fracTrajProgress, rad2deg(setPoints[0]), rad2deg(setPoints[1]));
+        //spdlog::info("{}, {:03.2f}, {:03.2f}", fracTrajProgress, rad2deg(setPoints[0]), rad2deg(setPoints[1]));
         returnValue = (setPosition(eigSetPoints) == SUCCESS);
     } 
 

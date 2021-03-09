@@ -35,6 +35,8 @@ void InitState::during(void)
 void InitState::exit(void)
 {
     robot->initPositionControl();
+    robot->setPosControlContinuousProfile(true);
+
     PilotParameters Brad_parameters = {
         .lowerleg_length = 0.44,
         .upperleg_length = 0.44,
@@ -44,6 +46,8 @@ void InitState::exit(void)
         .torso_length = 0.4,
         .buttocks_height = 0.05};
     trajectoryGenerator->setPilotParameters(Brad_parameters);
+
+
 
     #ifdef NOROBOT
 
