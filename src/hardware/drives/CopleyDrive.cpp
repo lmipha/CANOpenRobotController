@@ -80,7 +80,10 @@ std::vector<std::string> CopleyDrive::generatePositionOffsetSDO(int offset) {
     sstream << "[1] " << NodeID << " write 0x6040 0 u16 0x0f";
     CANCommands.push_back(sstream.str());
     sstream.str(std::string());
-
+    // set control word to start homing
+    sstream << "[1] " << NodeID << " write 0x6040 0 u16 0x1f";
+    CANCommands.push_back(sstream.str());
+    sstream.str(std::string());
     return CANCommands;
 }
 

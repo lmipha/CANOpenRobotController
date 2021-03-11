@@ -92,6 +92,7 @@ class X2Robot : public Robot {
      *
      */
     motorProfile posControlMotorProfile{4000000, 240000, 240000};
+    
     motorProfile velControlMotorProfile{0, 240000, 240000};
 
     RobotParameters x2Parameters;
@@ -133,7 +134,7 @@ class X2Robot : public Robot {
       * Initialize memory for the Exoskelton <code>Joint</code> + sensors.
       * Load in exoskeleton paramaters to  <code>TrajectoryGenerator.</code>.
       */
-    X2Robot();
+    X2Robot(std::string robotName = XSTR(X2_NAME));
     ~X2Robot();
     Keyboard* keyboard;
     std::vector<Drive*> motorDrives;
@@ -292,7 +293,7 @@ class X2Robot : public Robot {
 
 
     /**
-       * \brief Changes the mode of 
+       * \brief Sets the position control profile to be continuous (i.e. movements do not to complete before a new command is issued) or not
        * 
        * \return true if successful
        * \return false if not (joints/drive not enabled or in correct mode)

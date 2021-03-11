@@ -4,7 +4,7 @@
 #define OWNER ((ExoTestMachine *)owner)
 
 ExoTestMachine::ExoTestMachine() {
-    trajectoryGenerator = new DummyTrajectoryGenerator(4);
+    trajectoryGenerator = new DummyTrajectoryGenerator(X2_NUM_JOINTS);
     robot = new X2Robot();
 
     // Create PRE-DESIGNED State Machine events and state objects.
@@ -28,8 +28,8 @@ ExoTestMachine::ExoTestMachine() {
      * NewTranstion(State A,Event c, State B)
      *
      */
-    NewTransition(initState, startExo, sitting);
-    NewTransition(initState, startExoCal, sitting);
+    NewTransition(initState, startExo, standing);
+    NewTransition(initState, startExoCal, standing);
     NewTransition(sitting, startStand, standingUp);
     NewTransition(standingUp, endTraj, standing);
     NewTransition(standing, startSit, sittingDwn);
@@ -83,6 +83,27 @@ bool ExoTestMachine::StartButtonsPressed::check(void) {
     }
     return false;
 }
+bool ExoTestMachine::StartExoCal::check(void) {
+    if (OWNER->robot->keyboard->getA() == true) {
+        spdlog::info("LEAVING INIT and entering Sitting");
+        spdlog::info("Performing joint homing");
+
+        std::vector<int> homingDirection = { -1, 0, 0, 0};
+        float thresholdTorque = 5; // Nm
+        float delayTime = 0.5;  // s
+        float homingSpeed = 0.1;  // [rad/s]
+        float maxTime = 5; // s
+
+        OWNER->robot->homing(homingDirection, thresholdTorque, delayTime, homingSpeed, maxTime);
+
+        spdlog::info("Homing complete");
+
+        spdlog::info("Setting to Position Control");
+        OWNER->robot->initPositionControl();
+        return true;
+    }
+    return false;
+}
 bool ExoTestMachine::StartExo::check(void) {
     if (OWNER->robot->keyboard->getS() == true) {
         spdlog::info("LEAVING INIT and entering Sitting");
@@ -92,13 +113,16 @@ bool ExoTestMachine::StartExo::check(void) {
 }
 bool ExoTestMachine::StartExoCal::check(void) {
     if (OWNER->robot->keyboard->getA() == true) {
-        spdlog::info("LEAVING INIT and entering Sitting");
-        spdlog::info("Homing");
+        #ifndef NOROBOT
+            spdlog::info("LEAVING INIT and entering Sitting");
+            spdlog::info("Homing");
 
-        OWNER->robot->disable();
-        OWNER->robot->homing();
-        spdlog::info("Finished");
-
+            OWNER->robot->disable();
+            OWNER->robot->homing();
+            spdlog::info("Finished");
+        #else
+            spdlog::warn("Calibration Not Avaiable in Simulation (NoRobot) Mode");
+        #endif
         return true;
     }
     return false;
