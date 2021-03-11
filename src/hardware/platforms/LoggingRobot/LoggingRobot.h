@@ -7,6 +7,8 @@
  * \copyright Copyright (c) 2020
  *
  * \brief  The<code> LogginRobot</ code> class represents a logging robot. This Robot doesn't actually do anything, except give options to act as a logger.
+ * 
+ * It has two functions: 1) To trigger data acquision devices not associate with the operation of the robot, and 2) to log data from existing devices
  *
  */
 
@@ -17,14 +19,44 @@
 #include "Robot.h"
 #include "RobotousRFT.h"
 #include "HX711.h"
+#include "ForcePlateSensor.h"
 
 class LoggingRobot : public Robot {
    private:
+    int numJoints = 4;
+    // -- Variables assocaited with standalone sensors -- //
     std::vector<RobotousRFT *> crutchSensors;
     Eigen::VectorXd crutchReadings;  //6xN Vector containing all crutch readings
-    HX711* strainGauge; 
 
-    bool sensorsOn =  false;
+    ForcePlateSensor* forcePlate;
+    Eigen::VectorXi forcePlateForces;  // Should be a vector of size 4
+
+    // -- Variables assoacited with parameters already transmitted from the robot -- // 
+    std::vector<RPDO *> rpdos;
+
+    // Motor Positions, Velocity
+    // Motor Torques
+    // Target Motor Positions
+    // Status Words
+    Eigen::Matrix<INTEGER32, Eigen::Dynamic, 1> motorPositions;
+    Eigen::Matrix<INTEGER32, Eigen::Dynamic, 1> motorVelocities;
+    Eigen::Matrix<INTEGER16, Eigen::Dynamic, 1> motorTorques;
+    Eigen::Matrix<INTEGER16, Eigen::Dynamic, 1> motorStatusWords;
+
+    // Variables from the ALEX Crutch Controller
+    // Go Button
+    // Next Motion (current Motion)
+    INTEGER16 goButton;
+    INTEGER16 nextMotion;
+
+    // Variables from the ALEX Robot
+    // Current State
+    // Current Motion
+    // Might need an additional about trajectory progress? (or could use target position)
+    INTEGER16 state;
+    INTEGER16 currentMotion;
+
+    bool sensorsOn = false;
 
    public:
     Keyboard *keyboard;
@@ -43,6 +75,15 @@ class LoggingRobot : public Robot {
      * @return Eigen::VectorXd& a 6xN (N is number of crutches) of crutch sensor readings
      */
     Eigen::VectorXd &getCrutchReadings();
+    Eigen::VectorXi &getForcePlateReadings();
+    Eigen::Matrix<INTEGER32, Eigen::Dynamic, 1> &getMotorPositions();
+    Eigen::Matrix<INTEGER32, Eigen::Dynamic, 1> &getMotorVelocities();
+    Eigen::Matrix<INTEGER16, Eigen::Dynamic, 1> &getMotorTorques();
+
+    INTEGER16& getGoButton();
+    INTEGER16&  getCurrentState();
+    INTEGER16&  getCurrentMovement();
+
 
     /**
      * @brief Takes the forces from the crutches and updates a local copy
@@ -51,9 +92,16 @@ class LoggingRobot : public Robot {
     void updateCrutchReadings();
 
     void setCrutchOffsets(Eigen::VectorXd offsets);
+    void zeroForcePlate();
 
     bool startSensors();
     bool stopSensors();
-};
+
+    bool startCrutchSensors();
+    bool stopCrutchSensors();
+
+
+    bool configureMasterPDOs();
+    };
 
 #endif /*LoggingRobot.h*/

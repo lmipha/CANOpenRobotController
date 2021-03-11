@@ -9,30 +9,29 @@
  *
  */
 
-#ifndef LR_CALIBRATESTATE_H
-#define LR_CALIBRATESTATE_H
+#ifndef FORCEPLATE_CALIBRATESTATE_H
+#define FORCEPLATE_CALIBRATESTATE_H
 
-#include "LoggingRobot.h"
+#include "ForcePlate.h"
 #include "State.h"
 
-#define NUM_CALIBRATE_READINGS 200
+#define NUM_CALIBRATE_READINGS 100
 
 class CalibrateState : public State {
     private:
-        Eigen::ArrayXXd readings;
         Eigen::ArrayXXi strainReadings;
 
         int currReading = 0;
 
     public :
-        LoggingRobot * robot;
+     ForcePlate *robot;
 
-        CalibrateState(StateMachine *m, LoggingRobot *robot, const char *name = NULL);
+     CalibrateState(StateMachine *m, ForcePlate *robot, const char *name = NULL);
 
-        void entry(void);
-        void during(void);
-        void exit(void);
+     void entry(void);
+     void during(void);
+     void exit(void);
 
-        int getCurrReading();
+     int getCurrReading();
 };
 #endif
