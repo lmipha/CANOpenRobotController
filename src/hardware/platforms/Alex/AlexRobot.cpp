@@ -501,6 +501,18 @@ bool AlexRobot::initialiseNetwork() {
     return true;
 }
 
+bool AlexRobot::setJointOverloadBehaviour(UNSIGNED32 mask, double window) {
+    spdlog::debug("AlexRobot::setJointOverloadBehaviour()");
+#ifndef VIRTUAL
+    bool status;
+    for (auto joint : joints) {
+        status = ((AlexJoint *)joint)->setOverloadBehaviour(mask, window);
+        if (!status)
+            return false;
+    }
+#endif
+    return true;
+}
 
 void AlexRobot::updateRobot() {
     Robot::updateRobot();

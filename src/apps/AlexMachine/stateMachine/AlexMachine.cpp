@@ -173,6 +173,8 @@ bool AlexMachine::StartExoHome::check(void) {
         spdlog::info("LEAVING INIT and entering Sitting");
         spdlog::info("Performing joint homing");
 
+        OWNER->robot->setJointOverloadBehaviour(159, deg2rad(50));
+
         std::vector<int> homingDirection = {-1, 1, -1, 1, 1, 1}; // std::vector<int>(ALEX_NUM_JOINTS, 1);
         float thresholdTorque = 50.0;
         float delayTime = 0.2;

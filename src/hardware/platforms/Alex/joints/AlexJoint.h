@@ -31,25 +31,6 @@ typedef struct JointDrivePairs {
 
 
 /**
- * Paramater definitions: Hip motor reading and corresponding angle. Used for mapping between degree and motor values.
- */
-static JointDrivePairs ALEXhipJDP{
-    250880,       // drivePosA
-    0,            // drivePosB
-    deg2rad(90),  //jointPosA
-    deg2rad(180)    //jointPosB
-};
-/**
- * Paramater definitions: Knee motor reading and corresponding angle. Used for mapping between degree and motor values.
- */
-static JointDrivePairs ALEXkneeJDP{
-    250880,       // drivePosA
-    0,            //drivePosB
-    deg2rad(90),  //jointPosA
-    deg2rad(0)    //jointPosB
-};
-
-/**
  * \brief implementation of the ActuatedJoints class for the Alex Exoskeleton. 
  * 
  * 
@@ -120,6 +101,9 @@ class AlexJoint : public Joint {
          * \return false if not
          */
     void setPositionOffset(double offset);
-};
+
+    bool setOverloadBehaviour(UNSIGNED32 mask, double window);
+
+    };
 
 #endif

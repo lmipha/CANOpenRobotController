@@ -70,13 +70,6 @@ struct RobotParameters {
     Eigen::VectorXd forceSensorScaleFactor;  // scale factor of force sensors [N/sensor output]
 };
 
-
-/**
- * Defines the Joint Limits of the X2 Exoskeleton
- *
- */
-static ExoJointLimits AlexJointLimits = {deg2rad(210), deg2rad(70), deg2rad(120), deg2rad(0)};
-
 /**
  * \todo Load in paramaters and dictionary entries from JSON file.
  * 
@@ -103,9 +96,33 @@ private:
     motorProfile posControlMotorProfile{4000000, 190000, 190000};
    
    motorProfile velControlMotorProfile{0, 240000, 240000};
+   /**
+ * Paramater definitions: Hip motor reading and corresponding angle. Used for mapping between degree and motor values.
+ */
+  JointDrivePairs ALEXhipJDP{
+       250880,       // drivePosA
+       0,            // drivePosB
+       deg2rad(90),  //jointPosA
+       deg2rad(180)  //jointPosB
+   };
+   /**
+ * Paramater definitions: Knee motor reading and corresponding angle. Used for mapping between degree and motor values.
+ */
+  JointDrivePairs ALEXkneeJDP{
+       250880,       // drivePosA
+       0,            //drivePosB
+       deg2rad(90),  //jointPosA
+       deg2rad(0)    //jointPosB
+   };
 
-   std::string robotName_;
-   RobotParameters x2Parameters;
+  /**
+ * Defines the Joint Limits of the X2 Exoskeleton
+ *
+ */
+  ExoJointLimits AlexJointLimits = {deg2rad(210), deg2rad(70), deg2rad(120), deg2rad(0)};
+
+  std::string robotName_;
+  RobotParameters x2Parameters;
 
   UNSIGNED8 currentState; // Static Cast to AlexState
   UNSIGNED8 currentMovement; // Static Cast to RobotMode
@@ -374,5 +391,8 @@ private:
   bool initializeRobotParams(std::string robotName);
 
   bool configureMasterPDOs();
-};
+
+  bool setJointOverloadBehaviour(UNSIGNED32 mask, double window);
+
+  };
 #endif /*AlexRobot_H*/

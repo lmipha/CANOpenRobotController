@@ -86,3 +86,10 @@ double AlexJoint::getTorque() {
 void AlexJoint::setPositionOffset(double offset) {
     ((CopleyDrive *)drive)->setPositionOffset(-jointPositionToDriveUnit(offset));
 }
+
+bool AlexJoint::setOverloadBehaviour(UNSIGNED32 mask, double window) {
+    ((CopleyDrive *)drive)->setFaultMask(mask);
+    ((CopleyDrive *)drive)->setTrackingWindow(window*JDSlope);
+
+    return true;
+}
