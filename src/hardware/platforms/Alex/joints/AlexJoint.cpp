@@ -89,7 +89,7 @@ void AlexJoint::setPositionOffset(double offset) {
 
 bool AlexJoint::setOverloadBehaviour(UNSIGNED32 mask, double window) {
     ((CopleyDrive *)drive)->setFaultMask(mask);
-    ((CopleyDrive *)drive)->setTrackingWindow(window*JDSlope);
+    ((CopleyDrive *)drive)->setTrackingWindow(abs(window*JDSlope));
 
     return true;
 }

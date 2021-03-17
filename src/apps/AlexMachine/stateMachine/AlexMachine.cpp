@@ -318,7 +318,7 @@ bool AlexMachine::IsRPressed::check(void)
     return OWNER->robot->keyboard->getR();
 #endif
 #ifndef KEYBOARD
-    return OWNER->robot->buttons.getErrorButton();
+    return OWNER->robot->buttons->getErrorButton();
 #endif
 }
 bool AlexMachine::ResetButtons::check(void)
@@ -327,7 +327,7 @@ bool AlexMachine::ResetButtons::check(void)
     return OWNER->robot->keyboard->getR();
 #endif
 #ifndef KEYBOARD
-    return !(OWNER->robot->buttons.getErrorButton());
+    return !(OWNER->robot->buttons->getErrorButton());
 #endif
 }
 

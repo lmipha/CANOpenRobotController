@@ -385,7 +385,7 @@ void AlexRobot::signalHandler(int signum) {
 bool AlexRobot::initialiseInputs() {
     spdlog::info("initinputs");
     inputs.push_back(keyboard = new Keyboard());
-    inputs.push_back(new Buttons());
+    inputs.push_back(buttons = new Buttons());
     // Should also Construct an Alex Crutch Input here
     inputs.push_back(pb = new ALEXCrutchController());
     return true;
@@ -577,7 +577,7 @@ bool AlexRobot::disableJoints() {
     bool tmp = true;
     for (auto p : joints) {
         if (((Joint *)p)->disable() == false) {
-            std::cout << "Drive failed to be disabled!" << std::endl;
+            spdlog::error("Drive {} failed to be disabled!", p->getId());
             tmp = false;
         }
     }

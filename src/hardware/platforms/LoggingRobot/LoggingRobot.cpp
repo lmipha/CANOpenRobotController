@@ -82,7 +82,7 @@ bool LoggingRobot::configureMasterPDOs() {
 
     // PDOs for Status Variables
     void *tempDataEntryPointer[1] = {(void *)&goButton};
-    UNSIGNED16 dataSize[1] = {1};
+    UNSIGNED16 dataSize[1] = {2};
     rpdos.push_back(new RPDO(0x192, 0xff, tempDataEntryPointer, dataSize, 1));
 
     tempDataEntryPointer[0] = {(void *)&state};

@@ -7,8 +7,8 @@
 
 Buttons::Buttons() {
     spdlog::debug("Button object created");
-    iolib_init();
-    iolib_setdir(8, 10, BBBIO_DIR_IN);
+    spdlog::info("Init: {}", iolib_init());
+    spdlog::info("SetDir: {}", iolib_setdir(8, 10, BBBIO_DIR_IN));
 
     errorButton = false;
 };
@@ -16,7 +16,11 @@ Buttons::~Buttons() {
     // Todo: Check if destructor is necessary
 };
 void Buttons::updateInput() {
-    errorButton = is_high(8, 10);
+
+    if (is_high(8,10))
+        errorButton=false;
+    else 
+        errorButton = true;
 
     // std::cout << "Error button value: " << errorButton << std::endl;
 };

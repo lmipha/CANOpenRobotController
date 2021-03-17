@@ -150,7 +150,7 @@ private:
   AlexTrajectoryGenerator *trajectoryGenerator;
   Keyboard *keyboard;
   ALEXCrutchController *pb;
-  Buttons buttons;
+  Buttons *buttons;
 
   // Base class drive pointer: can be any type of derived driver class.
   std::vector<Drive *> motorDrives;
