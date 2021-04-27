@@ -469,6 +469,7 @@ bool AlexRobot::moveThroughTraj() {
     return returnValue;
 }
 
+
 bool AlexRobot::initialiseJoints() {
     for (int id = 0; id < ALEX_NUM_JOINTS; id++) {
         motorDrives.push_back(new CopleyDrive(id + 1));

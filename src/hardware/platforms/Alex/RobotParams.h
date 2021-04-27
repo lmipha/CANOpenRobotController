@@ -8,7 +8,7 @@
  * \version 0.2
  * \copyright Copyright (c) 2020
  */
-#include "AlexJoint.h"
+//#include "AlexJoint.h"
 
 #ifndef ROBOT_PARAMS_H
 #define ROBOT_PARAMS_H

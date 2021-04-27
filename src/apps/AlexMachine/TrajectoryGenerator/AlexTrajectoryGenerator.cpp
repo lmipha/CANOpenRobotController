@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Author: Dillon Chong
  * Date: 29 Sep 2019
  *
@@ -9,6 +9,8 @@
 */
 
 #include "AlexTrajectoryGenerator.h"
+#include <iostream>
+using namespace std;
 
 /*Test hardcoded trajectory*/
 //** test function
@@ -29,6 +31,8 @@ bool AlexTrajectoryGenerator::initialiseTrajectory() {
     return true;
 }
 bool AlexTrajectoryGenerator::initialiseTrajectory(RobotMode mvmnt, std::vector<double> qdeg) {
+    //save robot mode
+    this->currMotion = mvmnt;
     // Set the trajectory parameters
     jointspace_state jointSpaceState;
     jointSpaceState.q[0] = (qdeg[0]);
@@ -39,7 +43,40 @@ bool AlexTrajectoryGenerator::initialiseTrajectory(RobotMode mvmnt, std::vector<
     jointSpaceState.q[5] = deg2rad(85);
     jointSpaceState.time = 0;
     setTrajectoryParameters(movementTrajMap[mvmnt]);
-    generateAndSaveSpline(jointSpaceState);
+    if (mvmnt == RobotMode::NORMALWALK){
+        point hipVel = {0,0,0};
+        point hipAcc = {0,0,0};
+   
+        point rAnkleVel ={0,0,0};
+        point rAnkleAcc ={0,0,0};
+    
+        point lAnkleVel ={0,0,0};
+        point lAnkleAcc ={0,0,0};
+        StepParams sp;
+        sp.duration = STEPTIME;
+        sp.stepHeight = STEPHEIGHT;
+        sp.strideLength = STEPLENGTH ;
+        sp.sF = Foot::Right;
+        xTraj.SetStanceSide(Foot::Right);
+        double hipWidth = pilotParameters.hip_width;
+        double shoulder = hipWidth*HSR;
+        this->xTraj.SetPilotParams(pilotParameters.lowerleg_length,pilotParameters.upperleg_length,shoulder,pilotParameters.foot_length,pilotParameters.hip_width,pilotParameters.torso_length,CRUTCHLENGTH);      
+        PilotParams pp =  xTraj.GetPilotParams();
+        std::vector<point> ts(3);
+        //ts is task space states  {hipPos,rAnklePos,lAnklePos}        
+        std::vector<double> initJoints = xTraj.CurrJoint2XJointRad(qdeg); 
+        initJoints = xTraj.Right2Left(initJoints); 
+//        for(int i = 0;i<NUM_DETECT_JOINTS;i++)
+//        cout<<" "<<initJoints[i]<<" ";      
+        ts = xTraj.joint2TaskSpace(initJoints,pp,sp.sF);
+ /*       cout<<"hip :"<<ts[0].x<<" "<<ts[0].y<<" "<<ts[0].z<<" ";
+        cout<<"rAnkle :"<<ts[1].x<<" "<<ts[1].y<<" "<<ts[1].z<<" ";
+        cout<<"lANKLE :"<<ts[2].x<<" "<<ts[2].y<<" "<<ts[2].z<<" ";*/
+        XTSTS initialPos = xTraj.setTS(ts[0],hipVel,hipAcc,ts[1],rAnkleVel,rAnkleAcc,ts[2],lAnkleVel,lAnkleAcc,initJoints[2],sp.duration);
+        std::vector<polyDef> coefficients = xTraj.generateTS(initialPos, pp,sp); 
+//        cout<<" finished ";       
+    }else 
+        generateAndSaveSpline(jointSpaceState);        
     return true;
 }
 bool AlexTrajectoryGenerator::initialiseTrajectory(RobotMode mvmnt, Foot stanceFoot, std::vector<double> qdeg) {
@@ -57,7 +94,34 @@ bool AlexTrajectoryGenerator::initialiseTrajectory(RobotMode mvmnt, Foot stanceF
     if (stanceFoot == Foot::Left) {
         setTrajectoryStanceLeft();
     }
-    generateAndSaveSpline(jointSpaceState);
+    if (mvmnt == RobotMode::NORMALWALK){
+        point hipVel = {0,0,0};
+        point hipAcc = {0,0,0};
+   
+        point rAnkleVel ={0,0,0};
+        point rAnkleAcc ={0,0,0};
+    
+        point lAnkleVel ={0,0,0};
+        point lAnkleAcc ={0,0,0};
+        StepParams sp;
+        sp.duration = STEPTIME;
+        sp.stepHeight = STEPHEIGHT;
+        sp.strideLength = STEPLENGTH ;
+        sp.sF = Foot::Left;
+        xTraj.SetStanceSide(Foot::Left);
+        double hipWidth = pilotParameters.hip_width;
+        double shoulder = hipWidth*HSR;
+        this->xTraj.SetPilotParams(pilotParameters.lowerleg_length,pilotParameters.upperleg_length,shoulder,pilotParameters.foot_length,pilotParameters.hip_width,pilotParameters.torso_length,CRUTCHLENGTH);      
+        PilotParams pp =  xTraj.GetPilotParams();
+        std::vector<point> ts(3);
+        //ts is task space states  {hipPos,rAnklePos,lAnklePos}
+        std::vector<double> initJoints = xTraj.CurrJoint2XJointRad(qdeg);        
+        ts = xTraj.joint2TaskSpace(initJoints,pp,sp.sF);
+        XTSTS initialPos = xTraj.setTS(ts[0],hipVel,hipAcc,ts[1],rAnkleVel,rAnkleAcc,ts[2],lAnkleVel,lAnkleAcc,initJoints[2],sp.duration);
+        std::vector<polyDef> coefficients = xTraj.generateTS(initialPos, pp,sp); 
+       // cout<<" finished ";       
+    }else
+        generateAndSaveSpline(jointSpaceState);
     return true;
 }
 
@@ -76,44 +140,69 @@ bool AlexTrajectoryGenerator::initialiseTrajectory(RobotMode mvmnt, double time)
 //get the position at any given time
 std::vector<double> AlexTrajectoryGenerator::getSetPoint(time_tt time) {
     /*Intialize data*/
-    std::vector<double> angles;
-    // Discretise/Sample the spline
-    time_tt startTime = trajectoryJointSpline.times.front();
-    time_tt endTime = trajectoryJointSpline.times.back();
-    // Every sample time, compute the value of q1 to q6 based on the time segment / set of NO_JOINTS polynomials
-    int numPoints = trajectoryJointSpline.times.size();
-    int numPolynomials = numPoints - 1;
-    CubicPolynomial currentPolynomial[ALEX_NUM_JOINTS];
+    std::vector<double> angles;    
+    if(currMotion == RobotMode::NORMALWALK){  
+        Foot stanceFoot = xTraj.GetStanceSide();      
+         std::vector<point> state;
+         std::vector<double> joint;  
+         if((time>= 0) && (time<=1))
+            state = xTraj.getTaskState(time*STEPTIME); 
+        else
+            state = xTraj.getTaskState(STEPTIME); 
+ //      cout<<"hip :"<<state[0].x<<" "<<state[0].y<<" "<<state[0].z<<" ";
+ //        cout<<"rAnkle :"<<state[1].x<<" "<<state[1].y<<" "<<state[1].z<<" ";
+ //        cout<<"lANKLE :"<<state[2].x<<" "<<state[2].y<<" "<<state[2].z<<" ";
+            joint = xTraj.inverseKinematics(state[0],state[1],state[2],pilotParameters.upperleg_length,pilotParameters.lowerleg_length,TORSOANGLE,trajectoryParameter.stance_foot);
+//         cout<<"inv joints: "<<joint[0]<<" "<<joint[1]<<" "<<joint[2]<<" "<<joint[3]<<" "<<joint[4]<<" "<<joint[5];    
+            if( stanceFoot == Foot::Right)
+                joint = xTraj.Left2Right(joint);
+   //         cout<<"left2R joints: "<<joint[0]<<" "<<joint[1]<<" "<<joint[2]<<" "<<joint[3]<<" "<<joint[4]<<" "<<joint[5];  
+            angles = xTraj.XJoint2CurrJointRad(joint);        
+         
+//         cout<<"anlges: ";
+//        cout<<angles[0]<<" "<<angles[1]<<" "<<angles[2]<<" "<<angles[3]<<" "<<angles[4]<<" "<<angles[5];
+    //     limit_position_against_angle_boundary(angles);
+             
+         return angles;
+    }else{        
+        // Discretise/Sample the spline
+        time_tt startTime = trajectoryJointSpline.times.front();
+        time_tt endTime = trajectoryJointSpline.times.back();
+        // Every sample time, compute the value of q1 to q6 based on the time segment / set of NO_JOINTS polynomials
+        int numPoints = trajectoryJointSpline.times.size();
+        int numPolynomials = numPoints - 1;
+        CubicPolynomial currentPolynomial[ALEX_NUM_JOINTS];
 
-    for (int polynomial_index = 0; polynomial_index < numPolynomials; polynomial_index++) {
-        //if the jointspaceState time is bounded by the section of spline
+        for (int polynomial_index = 0; polynomial_index < numPolynomials; polynomial_index++) {
+            //if the jointspaceState time is bounded by the section of spline
 
-        if (time >= trajectoryJointSpline.times.at(polynomial_index) &&
-            time <= trajectoryJointSpline.times.at(polynomial_index + 1)) {
-            //std::cout << "time " << time << "\t" << trajectoryJointSpline.times.at(polynomial_index)  << std::endl;
-            for (int i = 0; i < ALEX_NUM_JOINTS; i++) {
-                currentPolynomial[i] = trajectoryJointSpline.polynomials[i].at(polynomial_index);
-                angles.push_back(evaluate_cubic_polynomial(currentPolynomial[i], time));
+            if (time >= trajectoryJointSpline.times.at(polynomial_index) &&
+                time <= trajectoryJointSpline.times.at(polynomial_index + 1)) {
+                //std::cout << "time " << time << "\t" << trajectoryJointSpline.times.at(polynomial_index)  << std::endl;
+                for (int i = 0; i < ALEX_NUM_JOINTS; i++) {
+                    currentPolynomial[i] = trajectoryJointSpline.polynomials[i].at(polynomial_index);
+                    angles.push_back(evaluate_cubic_polynomial(currentPolynomial[i], time));
+                }
+                ////force ankles to be in the final position
+                //currentPolynomial[ALEX_LEFT_ANKLE]= trajectoryJointSpline.polynomials[ALEX_LEFT_ANKLE].at(numPolynomials - 1);
+                //positionArray[ALEX_LEFT_ANKLE]= evaluate_cubic_polynomial(currentPolynomial[ALEX_LEFT_ANKLE], endTime);
+                //currentPolynomial[ALEX_RIGHT_ANKLE]= trajectoryJointSpline.polynomials[ALEX_RIGHT_ANKLE].at(numPolynomials - 1);
+                //positionArray[ALEX_RIGHT_ANKLE]= evaluate_cubic_polynomial(currentPolynomial[ALEX_RIGHT_ANKLE], endTime);
+                //make sure the angles are within boundary
+             //   limit_position_against_angle_boundary(angles);
+                return angles;
             }
-            ////force ankles to be in the final position
-            //currentPolynomial[ALEX_LEFT_ANKLE]= trajectoryJointSpline.polynomials[ALEX_LEFT_ANKLE].at(numPolynomials - 1);
-            //positionArray[ALEX_LEFT_ANKLE]= evaluate_cubic_polynomial(currentPolynomial[ALEX_LEFT_ANKLE], endTime);
-            //currentPolynomial[ALEX_RIGHT_ANKLE]= trajectoryJointSpline.polynomials[ALEX_RIGHT_ANKLE].at(numPolynomials - 1);
-            //positionArray[ALEX_RIGHT_ANKLE]= evaluate_cubic_polynomial(currentPolynomial[ALEX_RIGHT_ANKLE], endTime);
-            //make sure the angles are within boundary
-            limit_position_against_angle_boundary(angles);
-            return angles;
         }
+        //if the time point is outside range
+        for (int i = 0; i < ALEX_NUM_JOINTS; i++) {
+            currentPolynomial[i] = trajectoryJointSpline.polynomials[i].at(numPolynomials - 1);
+            angles.push_back(evaluate_cubic_polynomial(currentPolynomial[i], endTime));
+        }
+        //make sure the angles are within boundary
+        limit_position_against_angle_boundary(angles);
+        //else return previous poly
+        return angles;
     }
-    //if the time point is outside range
-    for (int i = 0; i < ALEX_NUM_JOINTS; i++) {
-        currentPolynomial[i] = trajectoryJointSpline.polynomials[i].at(numPolynomials - 1);
-        angles.push_back(evaluate_cubic_polynomial(currentPolynomial[i], endTime));
-    }
-    //make sure the angles are within boundary
-    limit_position_against_angle_boundary(angles);
-    //else return previous poly
-    return angles;
 }
 // handle error if reached
 /***********************************************************************
@@ -126,7 +215,7 @@ void AlexTrajectoryGenerator::setTrajectoryParameters(TrajectoryParameters traje
 
 void AlexTrajectoryGenerator::setPilotParameters(PilotParameters pilotParameters) {
     this->pilotParameters = pilotParameters;
-    spdlog::debug("Pilot Paramaters set");
+ //   spdlog::debug("Pilot Paramaters set");
 }
 
 /**
@@ -1325,7 +1414,7 @@ std::vector<jointspace_state> AlexTrajectoryGenerator::taskspace_states_to_joint
     for (auto taskspaceState : taskspaceStates) {
         if(jointspace_NaN_check(taskspace_state_to_jointspace_state(taskspaceState, trajectoryParameters, pilotParameters))){
           containNaN = true;
-          spdlog::debug("THE TRAJECTORY CONTAINS NAN");
+          //spdlog::debug("THE TRAJECTORY CONTAINS NAN");
         }
     }
     //construct the jointspaceStates with respect to whether it contains NaN
@@ -1358,7 +1447,7 @@ std::vector<double> AlexTrajectoryGenerator::triangle_inverse_kinematics(
     const double angleLAcuteFromVertical = atan2f((xAnkle - xHip), (zHip - zAnkle));
     const double angleInternalHip = acos((Lupper * Lupper + L * L - Llower * Llower) / (2.0 * Lupper * L));
     if (std::isnan(angleInternalHip)) {
-        spdlog::debug("acos outside of domain: do not move!");
+     //   spdlog::debug("acos outside of domain: do not move!");
         /*\todo throw and catch an error from this is calling function*/
     }
     //const double angleInternalAnkle = asin(sin(angleInternalHip)*Lupper/Llower);
@@ -1722,4 +1811,10 @@ bool AlexTrajectoryGenerator::isTrajectoryFinished(double trajProgress) {
     } else {
         return false;
     }
+}
+
+jointspace_spline AlexTrajectoryGenerator::getTrajectoryJointSpline(){
+    jointspace_spline x = trajectoryJointSpline;
+    return x;
+
 }

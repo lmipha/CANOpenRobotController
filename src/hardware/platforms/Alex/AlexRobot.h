@@ -216,6 +216,7 @@ private:
     */
   bool moveThroughTraj();
 
+
   /**
     * \brief Homing procedure of joint
     *

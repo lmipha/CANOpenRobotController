@@ -1,3 +1,4 @@
+// add current Motion(currMotion)
 /* Header file for calculating trajectory,
 */
 
@@ -11,8 +12,8 @@
 #include <iostream>
 #include <map>
 #include <vector>
-
 #include "RobotParams.h"
+#include "Xtraj.h"
 
 /**
  * An enum type.
@@ -36,11 +37,12 @@
 #define STAIRTIME 3
 #define UNEVENSTEPTIME 3
 #define UNEVENTORSO deg2rad(10)
-#define STEPLENGTH 0.33
+//#define STEPLENGTH 0.33
+#define STEPLENGTH 0.6
 #define HALFSTEPLENGTH STEPLENGTH / 2
 #define LONGSTEPLENGTH STEPLENGTH * 1.5
 #define BACKLENGTH 0.3
-#define STEPHEIGHT 0.4
+#define STEPHEIGHT 0.2
 #define STEPHIGH 0.7
 #define STEPTGTLENGTH 0.0
 #define LEGSLACK 0.0001
@@ -50,14 +52,18 @@
 #define STAIRHEIGHT 0.25
 #define TILTANKLE deg2rad(10) //tbd, 12 deg for tilted path, 20 deg for ramp
 #define RAMPANKLE deg2rad(10) //tbd, need to measure when back in the lab
+#define HSR (1.8); //hip width to shoulder ratio
+const double CRUTCHLENGTH = 1.00;
+const double TORSOANLGE = deg2rad(5);
+
 
 typedef double time_tt;  // time_t is already used
-
+/*
 enum class Foot {
     Left,
     Right
 };
-
+*/
 enum class StepType {
     Walk,
     Sit,
@@ -86,10 +92,10 @@ static std::map<StepType, std::string> StepTypeToString = {
     {StepType::Back, "Backstep"},
     {StepType::Sitting, "Sitting (Fixed)"},
     {StepType::Uneven, "Uneven"}};
-
+/*
 typedef struct point {
     double x, y, z;
-} point;
+} point;*/
 
 /** Structs for Task Space and Joint Space
  */
@@ -317,7 +323,8 @@ class AlexTrajectoryGenerator {
      *
      */
     PilotParameters pilotParameters;
-
+    RobotMode currMotion;
+    XiruoWalk xTraj;
     /**
      * @brief Parameters related to the trajectory to be executed
      *
@@ -453,5 +460,6 @@ class AlexTrajectoryGenerator {
      * \return false if trajectory has not been completed
      */
     bool isTrajectoryFinished(double trajProgress);
+    jointspace_spline getTrajectoryJointSpline();
 };
 #endif
